@@ -1,0 +1,386 @@
+<mujoco model="KIST MAHRU-WL with Battery">
+	<compiler angle="radian" autolimits="false" meshdir="Meshes" texturedir="PNG"/>
+
+	<!-- <option	timestep="0.001" apirate="200" gravity="0 0 -9.81" integrator="Euler"  iterations="100" 
+          cone="elliptic" jacobian="auto" solver="CG" tolerance="1e-10" impratio="1.0"/> -->
+ 	 <!-- <size njmax="500" nconmax="100" /> -->
+	<!-- <option timestep="0.001" gravity="0 0 -9.81" tolerance="1e-10" cone="elliptic" jacobian="auto" solver="Newton"  noslip_iterations="100"
+				integrator="Euler" iterations="30"/> -->
+
+	<option timestep="0.001" gravity="0 0 -9.81" tolerance="1e-08" cone="elliptic" jacobian="dense" solver="Newton"  
+			noslip_iterations="10" integrator="Euler" iterations="30" impratio="10.0"/> 
+	<option>
+		<flag override="enable" gravity="enable"/>
+	</option>
+	<!-- <size njmax="500" nconmax="100" /> -->
+
+	<visual>
+		<global fovy="45" linewidth="2" glow="0.3"/>
+		<quality shadowsize="4096" numslices="48"/>
+		<map stiffness="50" stiffnessrot="100"/>
+		<scale forcewidth="0.03" contactwidth="0.15" contactheight="0.1" connect="0.1" com="0.2" jointlength="0.25" jointwidth="0.05"
+					 actuatorlength="0.5" actuatorwidth="0.3" framelength="1" framewidth="0.03"/>
+		<!-- <rgba haze="0.6 0.8 0.9 1" force="1 0 0 0.5" com="0 0 1 1"/> -->
+		<headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0.9 0.9 0.9"/>
+		<rgba haze="0.15 0.25 0.35 1"/>
+	</visual>
+
+	<!-- <default>
+		<geom contype="1" conaffinity="1" condim="3" material="MatLink"/>
+		<joint limited="false" damping="2" armature="0.1" stiffness="0" frictionloss="0.2"/>
+		<joint limited="false" damping="0.5" armature="0.1" stiffness="0" frictionloss="0.2"/>
+		<motor gear="1 0 0 0 0 0" ctrllimited="false" ctrlrange="-100 100"/>
+	</default> -->
+
+	<default>
+		<geom contype="1" conaffinity="1" condim="3" material="MatLink"/>
+		<joint limited="false" damping="2" armature="0.1" stiffness="0" frictionloss="0.2"/>
+		<motor gear="1 0 0 0 0 0" ctrllimited="false" ctrlrange="-100 100"/>
+		<default class="visual">
+			<geom material="black" contype="0" conaffinity="0" group="2"/>
+		</default>
+	</default>
+
+	<asset>
+		<material name="black" rgba="0.2 0.2 0.2 0.5"/>
+
+		<mesh name="Pelvis" file="base_link.STL"/>
+		<mesh name="PelvisVis" file="base_link.STL" scale="0.99 0.99 0.99"/>
+		<mesh name="Torso" file="TOP.STL"/>
+		<mesh name="TorsoVis" file="TOP.STL" scale="0.99 0.99 0.99"/>
+		<mesh name="Head" file="Head.STL"/>
+		<mesh name="RA1" file="RA1.STL"/>
+		<mesh name="RA2" file="RA2.STL"/>
+		<mesh name="RA3" file="RA3.STL"/>
+		<mesh name="RA4" file="RA4.STL"/>
+		<mesh name="LA1" file="LA1.STL"/>
+		<mesh name="LA2" file="LA2.STL"/>
+		<mesh name="LA3" file="LA3.STL"/>
+		<mesh name="LA4" file="LA4.STL"/>
+		<mesh name="RL1" file="RL1.STL"/>
+		<mesh name="RL2" file="RL2.STL"/>
+		<mesh name="RL3" file="RL3.STL"/>
+		<mesh name="RL4" file="RL4.STL"/>
+		<mesh name="RW" file="RW.STL"/>
+		<mesh name="LL1" file="LL1.STL"/>
+		<mesh name="LL2" file="LL2.STL"/>
+		<mesh name="LL3" file="LL3.STL"/>
+		<mesh name="LL4" file="LL4.STL"/>
+		<mesh name="LW" file="LW.STL"/>
+		<mesh name="ToeWheel" file="ToeWheel.STL"/>
+		<mesh name="AMCover" file="Cover.STL" scale="0.8 0.805 0.805"/>
+		<mesh name="LMCover" file="Cover.STL" scale="1.005 1.005 1.005"/>
+
+		<!-- <texture name="sky" type="skybox" builtin="gradient" width="512" height="512" rgb1="1 1 1" rgb2="0.6 0.8 1"/> -->
+		<texture name="picdisp"  type="2d" builtin="none"    file="Face02.png"/>
+		<texture name="picfloor" type="2d" builtin="none"    file="Marble-02.png"/>
+		<!-- <texture name="texplane" type="2d" builtin="checker" width="512" height="512"
+						 rgb1="0.8555 0.8516 0.7422" rgb2="0.4141 0.3516 0.8008" mark="edge" markrgb="1 1 1"/> -->
+		<texture name="texplane" type="2d" builtin="checker" width="512" height="512"
+						 rgb1="0.1 0.2 0.3" rgb2="0.5 0.6 0.7" mark="edge" markrgb="1 1 1" />
+		<texture name="picwheel" type="2d"     builtin="none" file="Wheel-01.png"/>
+
+
+		<material name="MatGnd"   reflectance="0" specular="1" shininess="1" rgba="0 0.4 0.5 1"/>
+		<material name="MatLink"  reflectance="0" specular="1" shininess="0.3" rgba="0.5 0.5 0.5 1"/>
+		<material name="MatPlane" texture="texplane" reflectance="0" texrepeat="2 2" texuniform="true"/>
+		<material name="MatWheel" texture="picwheel" emission="0.3" reflectance="0" shininess="0.5"/>
+
+		<texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+		<texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+		  markrgb="0.8 0.8 0.8" width="300" height="300"/>
+		<material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0"/>
+			
+		<!-- <hfield name='hf2' file="noise.png" size="5 5 0.03 0.0001"/> -->
+	</asset>
+	
+	<worldbody>
+		<!-- Light-->
+		<!-- <light directional="true" pos=" 5 -5 5" dir="-0.5  0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos=" 5  5 5" dir="-0.5 -0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos="-5  5 5" dir=" 0.5 -0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos="-5 -5 5" dir=" 0.5  0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/> -->
+		<!-- <light name="spotlight" mode="targetbodycom" target="Torso" pos="10 -10 10" diffuse="1.0 1.0 1.0" specular="0.0 0.0 0.0" castshadow="false"/> -->
+		<light directional="true" pos=" 5 -5 5" dir="-0.5  0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos=" 5  5 5" dir="-0.5 -0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos="-5  5 5" dir=" 0.5 -0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		<light directional="true" pos="-5 -5 5" dir=" 0.5  0.5 -1" diffuse="0.3 0.3 0.3" specular="0.0 0.0 0.0" castshadow="false"/>
+		
+		<camera name="TRK_BACK" mode="trackcom" pos="-3.4 0 2.3"  euler = "0  -1.134463778 -1.570796 " fovy = "40"/>
+		<camera name="TRK_RIGHT" mode="trackcom" pos="0 -3.4 2.3" euler = "1.134463778 0 0 " fovy = "40"/>
+		<camera name="TRK_FRONT" mode="trackcom" pos="3.4 0 2.3"  euler = "0   1.134463778  1.570796 " fovy = "40"/>
+		<camera name="TRK_LEFT" mode="trackcom" pos="0 3.4  2.3"  euler = "-1.134463778  0  -3.141592 " fovy = "40"/>
+
+		<!-- <camera name="TGT_TOP" mode="targetbody" target = "torso" pos="-0.45  0 1.5" /> -->
+		<!-- Ground -->
+		<geom name="Ground" type="plane" pos="0 0 0" material="groundplane" size="0 0 1" condim="3"/>
+		<!-- <geom name="Ground" type="plane" pos="0 0 0" material="MatPlane" size="0 0 1" condim="3"/> -->
+		<!-- <geom name='hfield2' pos='6 0 0' hfield='hf2' type='hfield' condim='3' conaffinity='15'/> -->
+
+		<!-- BASE : Pelvis -->
+		<body name="Pelvis" pos="0 0 0.8">
+		<freejoint name ="Floating-Base"/>
+			<inertial pos="-0.00067614 -5.55e-05 0.0714295" quat="0.707107 0 0 0.707107"
+								mass="2.28058" diaginertia="0.00672353 0.00634586 0.00411024"/>
+			<geom name="Pelvis" type="mesh" mesh="Pelvis" rgba="0.3555 0.4727 0.5547 1"/>	<!-- Titanium Blue -->
+
+			<!-- UpperBody : Torso --> 
+			<body name="Torso" pos="0 0 0.15" euler="3.1416 0 0">
+				<joint name="Torso_Y" pos="0 0 0" axis="0 0 1" range="-0.5 0.5" limited="false"/>
+				<inertial pos="-0.0700627 -0.00059468 -0.24363" quat="0.7 0 0 0.7"
+									mass="14.6588" diaginertia="0.26711 0.217134 0.153951"/>
+				<geom name="Torso" type="mesh" mesh="Torso" rgba="0.6563 0.6602 0.6758 1"/>	<!-- Metallic Silver -->
+				<geom name="Head" type="mesh" mesh="Head" pos="0 0 -0.0022" rgba="0.8438 0.8555 0.8672 1"/>	<!-- Chrome Silver -->
+				<geom name="Camera" type="box" pos="0.094 0 -0.526" euler="0 1.57 0" size="0.02 0.08 0.001" rgba="0.1 0.1 0.1 1"/>
+				<geom name="Face" type="box" pos="0.094 0 -0.429" euler="0 1.57 -1.57" size="0.095 0.055 0.001" rgba="0.9 0.9 0.9 1"/>
+				<geom name="Battery" type="box" pos="-0.154 0 -0.22" size="0.05 0.101 0.15" rgba="0.3555 0.4727 0.5547 1"/>	<!-- Titanium Blue -->
+				<geom name="FU" type="box" pos="0.09505 0 -0.253" size="0.004 0.0921 0.11" rgba="0.8164 0.4727 0.2305 1"/>	<!-- Metallic Copper -->
+				<geom name="FL" type="box" pos="0.062 0 -0.057" euler="0 -0.462 0" size="0.004 0.0925 0.06" rgba="0.8555 0.3047 0.3047 1"/>	<!-- Steel Red -->
+				<geom type="cylinder" pos="0.009 0 -0.143" euler="1.57 0 0" size="0.09005 0.0925" rgba="0.8555 0.3047 0.3047 1"/>	<!-- Steel Red -->
+				<geom name="BL" type="box" pos="-0.094 0 -0.05" size="0.005 0.0925 0.03" rgba="0.8555 0.3047 0.3047 1"/>	<!-- Steel Red -->
+				<geom type="cylinder" pos="-0.06 0 -0.02" euler="1.57 0 0" size="0.039 0.0925" rgba="0.8555 0.3047 0.3047 1"/>	<!-- Steel Red -->
+				<geom name="LB_Fan" type="box" pos="-0.033 -0.087 -0.31" size="0.05 0.002 0.04" rgba="0 0 0 1"/>
+				<geom name="RB_Fan" type="box" pos="-0.033  0.087 -0.31" size="0.05 0.002 0.04" rgba="0 0 0 1"/>
+
+				<!-- Right Arm -->
+				<body name="RA1" pos="0.047556 0.17703 -0.29" euler="-1.570796 0.087266 0">
+					<joint name="RArm_J1" pos="0 0 0" axis="0 0 1" limited="false" range="-3.14 3.14"/>
+					<inertial pos="-0.00253009 0.00062386 -0.014022" quat="0.70804 0.0165299 0.040664 0.704807" 
+										mass="1.33852" diaginertia="0.00206694 0.00181764 0.00115994"/>
+					<geom type="mesh" mesh="RA1" rgba="0.3594 0.3633 0.3555 1"/>	<!-- Gunmetal -->
+				
+					<body name="RA2" pos="0 0 0" euler="3.141592 1.570796 0">
+						<joint name="RArm_J2" pos="0 0 0" axis="0 0 1" limited="false" range="-1.57 1.57"/>
+						<inertial pos="0.0323144 0.0807497 0.00105962" quat="0.67607 0.680674 0.250737 -0.129394"
+											mass="1.32899" diaginertia="0.00335677 0.00320867 0.00125121"/>
+						<geom type="mesh" mesh="RA2" rgba="0.6563 0.6602 0.6758 1"/>	<!-- Metallic Silver -->
+						<geom type="cylinder" pos="0 0 -0.025" size="0.035 0.006" rgba="0.1914 0.2070 0.2148 1"/>	<!-- Gunmetal Gray -->
+						
+						<body name="RA3" pos="0.035 0.12 0" euler="-1.570796 0 -1.570796">
+							<joint name="RArm_J3" pos="0 0 0" axis="0 0 1" limited="false" range="-1 1"/>
+							<inertial pos="6.983e-05 -0.00139846 0.100248" quat="0.999889 -0.0111503 0.00808679 0.0056701"
+												mass="1.41642" diaginertia="0.00287566 0.00258677 0.00129787"/>
+							<geom type="mesh" mesh="RA3" rgba="0.4766 0.4648 0.4453 1"/>	<!-- Metallic Titanium -->
+							<geom name="RE_Fan" type="box" pos="-0.026 0 0.045" size="0.002 0.018 0.018" rgba="0 0 0 1"/>							
+				
+							<body name="RA4" pos="0 0 0.12" euler="1.570796 0 0">
+								<joint name="RArm_J4" pos="0 0 0" axis="0 0 1" limited="false" range="-1.8 0.05"/>
+								<inertial pos="-0.00053779 0.0658718 0.00614697" quat="0.676625 0.734676 0.038169 -0.0311954" 
+													mass="0.325331" diaginertia="0.00221643 0.00204299 0.000338785"/>
+								<geom name="RA" type="mesh" mesh="RA4" rgba="0.8438 0.8555 0.8672 1"/>	<!-- Chrome Silver -->
+								<geom name="RECover" type="mesh" mesh="AMCover" pos="0 0 -0.041" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+								<site name="RArm_EE" type="sphere" pos="0 0.24 0" size="0.012" rgba="1 0 0 1"/>
+							</body>
+						</body>
+					</body>
+				</body>	<!-- End of Right Arm -->
+
+				<!-- Left Arm -->
+				<body name="LA1" pos="0.047556 -0.17703 -0.29" euler="1.570796 0.087266 0">
+					<joint name="LArm_J1" pos="0 0 0" axis="0 0 1" limited="false" range="-3.14 3.14"/>
+					<inertial pos="-0.00253009 -0.00062386 -0.014022" quat="0.701945 0.0406307 0.0163936 0.710882" 
+										mass="1.33852" diaginertia="0.00206697 0.0018176 0.00115995"/>
+					<geom type="mesh" mesh="LA1" rgba="0.3594 0.3633 0.3555 1"/>	<!-- Gunmetal -->
+			
+					<body name="LA2" pos="0 0 0" euler="0 1.570796 0">
+						<joint name="LArm_J2" pos="0 0 0" axis="0 0 1" limited="false" range="-1.57 1.57"/>
+						<inertial pos="-0.0323144 0.0807497 0.00105962" quat="0.67607 0.680674 -0.250737 0.129394"
+											mass="1.32899" diaginertia="0.00335677 0.00320867 0.00125121"/>
+						<geom type="mesh" mesh="LA2" rgba="0.6563 0.6602 0.6758 1"/>	<!-- Metallic Silver -->
+						<geom type="cylinder" pos="0 0 -0.025" size="0.035 0.006" rgba="0.1914 0.2070 0.2148 1"/>	<!-- Gunmetal Gray -->
+						
+						<body name="LA3" pos="-0.035 0.12 0" euler="-1.570796 0 -1.570796">
+							<joint name="LArm_J3" pos="0 0 0" axis="0 0 1" limited="false" range="-1 1"/>
+							<inertial pos="-6.983e-05 0.00139846 0.100248" quat="0.999889 0.0111503 0.00808679 -0.0056701"
+												mass="1.41642" diaginertia="0.00287566 0.00258677 0.00129787"/>
+							<geom type="mesh" mesh="LA3" rgba="0.4766 0.4648 0.4453 1"/>	<!-- Metallic Titanium -->
+							<geom name="LE_Fan" type="box" pos="-0.026 0 0.045" size="0.002 0.018 0.018" rgba="0 0 0 1"/>
+						
+							<body name="LA4" pos="0 0 0.12" euler="-1.570796 0 0">
+								<joint name="LArm_J4" pos="0 0 0" axis="0 0 1" range="-0.05 1.7" limited="false"/>
+								<inertial pos="-0.00053779 -0.0658718 0.00614697" quat="0.676625 0.734676 -0.038169 0.0311954"
+													mass="0.325331" diaginertia="0.00221643 0.00204299 0.000338785"/>
+								<geom name="LA" type="mesh" mesh="LA4" rgba="0.8438 0.8555 0.8672 1"/>	<!-- Chrome Silver -->
+								<geom name="LECover" type="mesh" mesh="AMCover" pos="0 0 -0.041" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+								<site name="LArm_EE" type="sphere" pos="0 -0.24 0" size="0.012" rgba="1 0 0 1"/>
+							</body>
+						</body>
+					</body>
+				</body>	<!-- End of Left Arm -->
+				
+			</body>	<!-- End of Torso -->
+		
+			<!-- Right Leg -->	
+			<body name="RL1" pos="0 -0.0405 0" euler="-1.570796 -1.570796 0">
+			<!-- <body name="RL1" pos="0 -0.1215 0" euler="-1.570796 -1.570796 0"> -->
+				<joint name="RLeg_J1" pos="0 0 0" axis="0 0 1" limited="false" range="-0.1 1.57"/>
+				<inertial pos="-0.00291417 0.00000464 0.00943272" quat="0.72825 -0.0610318 -0.0569559 0.680208" 
+									mass="1.37909" diaginertia="0.00173406 0.00165275 0.00141416"/>
+				<geom type="mesh" mesh="RL1" rgba="0.3594 0.3633 0.3555 1"/>	<!-- Gunmetal -->
+			
+				<body name="RL2" pos="-0.088 0 0" euler="0 1.570796 0">
+					<joint name="RLeg_J2" pos="0 0 0" axis="0 0 1" limited="false" range="-1.57 0.5"/>
+					<inertial pos="0.00008364 0.07008671 0.00909055" quat="0.720487 0.693426 -0.00431856 0.00631908"
+										mass="2.58606" diaginertia="0.0389234 0.038818 0.00355688"/>
+					<geom type="mesh" mesh="RL2" rgba="0.6563 0.6602 0.6758 1"/>	<!-- Metallic Silver -->
+					<geom name="RHCover" type="mesh" mesh="LMCover" pos="0 0 -0.0345" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+					<geom name="RKCover" type="mesh" mesh="LMCover" pos="0 0.34 -0.037" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+					<geom name="RH_Fan" type="box" pos="-0.02 0.083 0" size="0.002 0.025 0.025" rgba="1 0 0 1"/>
+			
+					<body name="RL3" pos="0 0.34 0">
+						<joint name="RLeg_J3" pos="0 0 0" axis="0 0 1" limited="false" range="0 1.7"/>
+						<inertial pos="-0.00717223 0.13905809 -0.00700815" quat="0.630542 0.641224 -0.349054 0.263456"
+											mass="4.817" diaginertia="0.0978341 0.0953499 0.00577009"/>
+						<geom type="mesh" mesh="RL3" rgba="0.1953 0.3203 0.4805 1"/>	<!-- Metallic Blue -->
+						<geom name="RS_Fan" type="box" pos="0 0.22 -0.017" size="0.025 0.025 0.002" rgba="0 1 0 1"/>
+				
+						<body name="RL4" pos="0 0.292 -0.049" euler="3.141592 0 -0.777206557">
+								<joint name="RLeg_J4" pos="0 0 0" axis="0 0 1" limited="false" range="-0.1 1"/>
+							<inertial pos="0.09711521 -0.00115539 -0.00725259" quat="0.00881836 0.712392 0.0188407 0.701473" 
+												mass="0.34646245"  diaginertia="0.00159268 0.0015803 4.42824e-05"/>
+							<geom name="RTW" type="mesh" mesh="RL4" rgba="0.5508 0.5703 0.5859 1"/>	<!-- Dark Steel -->
+							<!-- <geom name="RToeWheel" type="mesh" mesh="ToeWheel" pos="0.19678 0 0" euler ="0 1.570796 0" 
+										rgba="0.8281 0.6836 0.2148 1"/>	Metallic Gold -->
+							<body name="RS" pos="0.19678 0.0 0.0">
+								<joint name="RToe" pos="0 0 0" axis="0 0 1" limited="false" range="-0.1 1" 
+											damping="0.01" armature="0.01" stiffness="0" frictionloss="0.01"/>   <!-- damping, armature, stiffness, frictionloss check needed -->
+								<inertial pos="0.0 0 0" quat="0 0 0 1" mass="0.01"  diaginertia="0.00000159268 0.0000015803 0.0000015803"/>
+								<geom name="RToeWheel" type="ellipsoid" pos="0.0 0 0" size="0.019 0.019 0.015" rgba="0.8281 0.6836 0.2148 1"/>	 
+								<site name="RToe" type="sphere" pos="0.0 0 0" size="0.015" rgba="1 0 0 1"/>
+							</body>
+						</body>
+				
+						<body name="RW" pos="-0.05 0.375 -0.049">
+							<joint name="RWheel" pos="0 0 0" axis="0 0 1"/>
+							<inertial pos="0.0 0.0 -0.00128012" quat="0.5 0.5 -0.5 0.5"  mass="0.440501" diaginertia="0.00149999 0.00077736 0.00077736"/>
+							<geom name="RWheel" type="mesh" mesh="RW" rgba="0.8281 0.6836 0.2148 1"/>
+							<!-- <geom name="RWheel" type="ellipsoid" pos="0 0 0" size="0.075 0.075 0.015" material="MatWheel"/> -->
+							<!-- <geom name="RWheel" type="cylinder" pos="0 0 0" size="0.075 0.019 0.015" material="MatWheel"/> -->
+							<!-- <geom name="RWheel_plate" type="box" pos="0 0.075 0" size="0.03 0.001 0.019" rgba="1 0 0 1"/> -->
+							<site name="RWheel_C" type="sphere" pos="0 0 0" size="0.015" rgba="1 0 0 1"/>
+						</body>
+					</body>
+				</body>
+			</body>	<!-- End of Right Leg -->
+		
+			<!-- Left Leg -->
+			<body name="LL1" pos="0 0.0405 0" euler="-1.570796 -1.570796 0">
+			<!-- <body name="LL1" pos="0 0.1215 0" euler="-1.570796 -1.570796 0"> -->
+				<joint name="LLeg_J1" pos="0 0 0" axis="0 0 1" limited="false" range="-1.57 0.1"/>
+				<inertial pos="0.00291417 0.00000464 0.00943272" quat="0.72825 0.0610318 0.0569559 0.680208"
+									mass="1.37909" diaginertia="0.00173406 0.00165275 0.00141416"/>
+				<geom type="mesh" mesh="LL1" rgba="0.3594 0.3633 0.3555 1"/>	<!-- Gunmetal -->
+
+				<body name="LL2" pos="0.088 0 0" euler="3.141592 -1.570796 0">
+					<joint name="LLeg_J2" pos="0 0 0" axis="0 0 1" limited="false" range="-0.5 1.57"/>
+					<inertial pos="-8.364e-05 -0.0700867 0.00909055"  quat="0.692088 0.721742 -0.00817723 0.00608179"
+										mass="2.58606" diaginertia="0.0389234 0.0388284 0.00354646"/>
+					<geom type="mesh" mesh="LL2" rgba="0.6563 0.6602 0.6758 1"/>	<!-- Metallic Silver -->
+					<geom name="LHCover" type="mesh" mesh="LMCover" pos="0 0 -0.0345" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+					<geom name="LKCover" type="mesh" mesh="LMCover" pos="0 -0.34 -0.037" euler="0 1.57 0" rgba="0.1133 0.1289 0.1797 1"/>
+					<geom name="LH_Fan" type="box" pos="-0.02 -0.083 0" size="0.002 0.025 0.025" rgba="1 0 0 1"/>
+			
+					<body name="LL3" pos="0 -0.34 0">
+						<joint name="LLeg_J3" pos="0 0 0" axis="0 0 1" limited="false" range="-1.7 0"/>
+						<inertial pos="-0.00805944 -0.139058 -0.00700815" quat="0.639017 0.627772 -0.269896 0.353152"
+											mass="4.817" diaginertia="0.0977842 0.0953284 0.00584155"/>
+						<geom type="mesh" mesh="LL3" rgba="0.1953 0.3203 0.4805 1"/>	<!-- Metallic Blue -->
+						<geom name="LS_Fan" type="box" pos="0 -0.22 -0.017" size="0.025 0.025 0.002" rgba="0 1 0 1"/>
+				
+						<body name="LL4" pos="0 -0.292 -0.049" euler="3.141592 0 0.777206557">
+							<joint name="LLeg_J4" pos="0 0 0" axis="0 0 1" limited="false" range="-1 0.1"/>
+							<inertial pos="0.0971152 0.00115539 -0.00725259" quat="-0.00881836 0.712392 -0.0188407 0.701473"
+												mass="0.346462" diaginertia="0.00159268 0.0015803 4.42824e-05"/>
+							<geom name="LTW" type="mesh" mesh="LL4" rgba="0.5508 0.5703 0.5859 1"/>
+							<!-- Dark Steel -->
+							<!-- <geom name="LToeWheel" type="mesh" mesh="ToeWheel" pos="0.19678 0 0" euler ="0 1.570796 0"
+										rgba="0.8281 0.6836 0.2148 1"/> -->
+							<!-- <geom name="LToeWheel" type="ellipsoid" pos="0.19678 0 0" size="0.019 0.019 0.015"
+										rgba="0.8281 0.6836 0.2148 1" friction="10 10 10"/>	  -->
+							<!-- Metallic Gold -->
+							<body name="LS" pos="0.19678 0.0 0.0">
+								<joint name="LToe" pos="0 0 0" axis="0 0 1" limited="false" range="-0.1 1" 
+										damping="0.01" armature="0.01" stiffness="0" frictionloss="0.01"/>   <!-- damping, armature, stiffness, frictionloss check needed -->
+								<inertial pos="0.0 0 0" quat="0 0 0 1" mass="0.01"  diaginertia="0.00000159268 0.0000015803 0.0000015803" />
+								<geom name="LToeWheel" type="ellipsoid" pos="0.0 0 0" size="0.019 0.019 0.015" rgba="0.8281 0.6836 0.2148 1"/>	 
+								<site name="LToe" type="sphere" pos="0.0 0 0" size="0.015" rgba="1 0 0 1"/>
+							</body>
+						</body>
+				
+						<body name="LW" pos="-0.05 -0.375 -0.049" euler="3.141592 0 0">
+							<joint name="LWheel" pos="0 0 0" axis="0 0 1"/>
+							<inertial pos="0 0 0.0010293" quat="0.5 0.5 -0.5 0.5" mass="0.440501" diaginertia="0.00128012 0.00077736 0.00077736"/>
+							<geom name="LWheel" type="mesh" mesh="LW" rgba="0.8281 0.6836 0.2148 1"/>
+							<!-- <geom name="LWheel" type="ellipsoid" pos="0 0 0" size="0.075 0.075 0.015" material="MatWheel"/>	 -->
+							<!-- <geom name="LWheel" type="cylinder" pos="0 0 0" size="0.075 0.019 0.015" material="MatWheel"/>	 -->
+							<!-- <geom name="LWheel_plate" type="box" pos="0 0.075 0" size="0.03 0.001 0.019" rgba="1 0 0 1"/> -->
+							<site name="LWheel_C" type="sphere" pos="0 0 0" size="0.015" rgba="1 0 0 1"/>
+						</body>
+					</body>
+				</body>
+			</body>	<!-- End of Left Leg -->
+		
+		</body>	<!-- End of Pelvis --> 
+		
+		<!-- <body name="field" pos="-2 0.0 -0.08">
+			<geom name="field" type="box" size="1.5 1.5 0.1" rgba="0.5 0.5 0.5 1" condim="6"/>
+		</body> -->
+
+	</worldbody>
+
+	<actuator>
+		<motor name="Torso-Y" ctrllimited="false" gear="1 0 0 0 0 0" joint="Torso_Y"/>	
+
+		<motor name="RArm-J1" ctrllimited="false" gear="1 0 0 0 0 0" joint="RArm_J1"/>
+		<motor name="RArm-J2" ctrllimited="false" gear="1 0 0 0 0 0" joint="RArm_J2"/>
+		<motor name="RArm-J3" ctrllimited="false" gear="1 0 0 0 0 0" joint="RArm_J3"/>
+		<motor name="RArm-J4" ctrllimited="false" gear="1 0 0 0 0 0" joint="RArm_J4"/>
+
+		<motor name="LArm-J1" ctrllimited="false" gear="1 0 0 0 0 0" joint="LArm_J1"/>
+		<motor name="LArm-J2" ctrllimited="false" gear="1 0 0 0 0 0" joint="LArm_J2"/>
+		<motor name="LArm-J3" ctrllimited="false" gear="1 0 0 0 0 0" joint="LArm_J3"/>
+		<motor name="LArm-J4" ctrllimited="false" gear="1 0 0 0 0 0" joint="LArm_J4"/>
+
+		<motor name="RLeg-J1" ctrllimited="false" gear="1 0 0 0 0 0" joint="RLeg_J1"/>
+		<motor name="RLeg-J2" ctrllimited="false" gear="1 0 0 0 0 0" joint="RLeg_J2"/>
+		<motor name="RLeg-J3" ctrllimited="false" gear="1 0 0 0 0 0" joint="RLeg_J3"/>
+		<motor name="RLeg-J4" ctrllimited="false" gear="1 0 0 0 0 0" joint="RLeg_J4"/>
+		<motor name="RLeg-J5" ctrllimited="true" gear="1 0 0 0 0 0" joint="RToe" ctrlrange="-100 100"/>
+		<motor name="RLeg-J6" ctrllimited="false" gear="1 0 0 0 0 0" joint="RWheel"/>
+		<!-- <velocity name="R-Wheel" joint="RWheel" kv="400"/> -->
+
+		<motor name="LLeg-J1" ctrllimited="false" gear="1 0 0 0 0 0" joint="LLeg_J1"/>
+		<motor name="LLeg-J2" ctrllimited="false" gear="1 0 0 0 0 0" joint="LLeg_J2"/>
+		<motor name="LLeg-J3" ctrllimited="false" gear="1 0 0 0 0 0" joint="LLeg_J3"/>
+		<motor name="LLeg-J4" ctrllimited="false" gear="1 0 0 0 0 0" joint="LLeg_J4"/>
+		<motor name="LLeg-J5" ctrllimited="true" gear="1 0 0 0 0 0" joint="LToe" ctrlrange="-100 100"/>
+		<motor name="LLeg-J6" ctrllimited="false" gear="1 0 0 0 0 0" joint="LWheel"/>
+		<!-- <velocity name="L-Wheel" joint="LWheel" kv="400"/> -->
+	</actuator>
+
+	<contact>
+		<exclude body1="RL4" body2="RW"/>
+		<exclude body1="LL4" body2="LW"/>
+		<pair geom1="Ground" geom2="RToeWheel" condim="3"/>
+		<pair geom1="Ground" geom2="LToeWheel" condim="3"/>
+		<!-- <pair geom1="Ground" geom2="RWheel" condim="3"/> -->
+		<!-- <pair geom1="Ground" geom2="LWheel" condim="3"/> -->
+		<pair geom1="Ground" geom2="RWheel" condim="3" friction="50 50 0.005 1 1"/>
+		<pair geom1="Ground" geom2="LWheel" condim="3" friction="50 50 0.005 1 1"/>
+		<!-- <pair geom1="Ground" geom2="RWheel" condim="3" friction="1 1 1 1 1"/> -->
+		<!-- <pair geom1="Ground" geom2="LWheel" condim="3" friction="1 1 1 1 1"/> -->
+
+		<!-- <pair geom1="Ground" geom2="RWheel" condim="3" friction="1 5 0.05 0.1 0.1"/>
+		<pair geom1="Ground" geom2="LWheel" condim="3" friction="1 5 0.05 0.1 0.1"/> -->
+	</contact>
+	
+</mujoco>
+
+
+<!-- running pose 
+	<key qpos='1.61013 2.0346 0.673343 0.999206 8.74163e-06 0.0398301 
+	5.96661e-06 2.97125e-05 -0.879648 -0.376992 -0.094248 -1.03673 -0.534072 0.31416 -0.000198845 1.13152 -0.094248 -0.376992 0.993651 1.85354 -0.0253493 0.094248 1.22522 -1.66505 -1.85354 -0.0253028'/> 
+-->
+
+<!-- <key qpos='2.92125 2.17482 1.29975 1 6.44246e-18 6.99931e-19 -1.05146e-17 0.031416 -0.47124 -0.376992 -0.188496 -1.00531 
+ -0.094248 0.188496 -0.251328 1.28806 -0.031416 -0.376992 1.03673 1.88496 0 0.031416 1.16239 -1.79071 -1.88496 0'/> -->

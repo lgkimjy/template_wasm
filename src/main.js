@@ -4,14 +4,14 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import loadMujoco from "@mujoco/mujoco";
-import mahruSourceXml from "../../MAHRU-WL_MPC_TOEJOINT/model/KIST MAHRU-WL/KIST MAHRU-WL_w_Battery_passive.xml?raw";
+import mahruSourceXml from "./model/mahru_wl_battery_passive.xml?raw";
 
 const USE_FAST_GLB_VISUALS = true;
 const GLB_ASSET_BASE = `${import.meta.env.BASE_URL || "/"}assets/mahru_glb/`;
 
 const FULL_STL_MODE_MESSAGE = "Full STL MuJoCo mode is kept in rollback_snapshots/pre_glb_overlay_20260502.";
 
-const TRAJECTORY_URL = "/trajectories/ssp_line_walk_onspot_qpos.csv";
+const TRAJECTORY_URL = `${import.meta.env.BASE_URL || "/"}trajectories/ssp_line_walk_onspot_qpos.csv`;
 const TRAJECTORY_NAME = "SSP_LINE_WALK_ONSPOT";
 
 const CAMERA_VIEW = {

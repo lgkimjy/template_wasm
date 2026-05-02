@@ -6,6 +6,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: here,
+  base: "/template_wasm/",
   server: {
     port: 5174,
     strictPort: false,

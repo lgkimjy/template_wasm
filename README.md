@@ -13,12 +13,22 @@ npm run assets:glb
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal. In this session it is `http://127.0.0.1:5174`.
+Open the Vite URL printed in the terminal. Because this app is configured as a GitHub Pages project site, the local URL includes the repository base path: `http://127.0.0.1:5174/template_wasm/`.
+
+## GitHub Pages
+
+This repository is configured for GitHub Pages at:
+
+```text
+https://lgkimjy.github.io/template_wasm/
+```
+
+On GitHub, open `Settings -> Pages`, set `Build and deployment -> Source` to `GitHub Actions`, then push to `master`. The workflow in `.github/workflows/deploy.yml` runs `npm ci`, builds the Vite app, and deploys `dist/`.
 
 ## What this app does
 
 - Uses the official MuJoCo JavaScript/WebAssembly binding, `@mujoco/mujoco`.
-- Imports `MAHRU-WL_MPC_TOEJOINT/model/KIST MAHRU-WL/KIST MAHRU-WL_w_Battery_passive.xml` as source MJCF so replay uses the same model family as the log.
+- Imports `src/model/mahru_wl_battery_passive.xml` as source MJCF so the GitHub Pages build is self-contained.
 - Converts the matching `model/KIST MAHRU-WL/Meshes/*.STL` files to `public/assets/mahru_glb/*.glb` with `assimp`.
 - Uses a light MuJoCo runtime XML with mesh geoms stripped out, then renders the original visual meshes as a Three.js GLB overlay attached to MuJoCo body poses.
 - Renders the MuJoCo `mjvScene` primitives, contact helpers, and world helpers with Three.js.
