@@ -1,0 +1,19 @@
+{
+  "name": "mahru-wasm-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "assets:glb": "node scripts/convert-stl-to-glb.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@mujoco/mujoco": "^3.6.0",
+    "three": "^0.165.0"
+  },
+  "devDependencies": {
+    "vite": "^4.5.5"
+  }
+}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAHRU-WL WASM Viewer</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="toolbar" aria-label="MAHRU-WL controls">
+        <div class="brand">
+          <strong>MAHRU-WL</strong>
+          <span id="status">loading</span>
+        </div>
+        <span id="error-message" class="error-message"></span>
+        <button id="pause-button" type="button">Pause</button>
+        <button id="reset-button" type="button">Reset</button>
+        <button id="replay-button" type="button">Replay</button>
+        <button id="contacts-button" type="button">Contacts</button>
+        <button id="forces-button" type="button">Forces</button>
+        <button id="axes-button" type="button">Axes</button>
+        <button id="track-button" type="button">Track</button>
+        <label class="timeline-control">
+          Frame
+          <input id="timeline-input" type="range" min="0" max="0" value="0" step="1" />
+        </label>
+        <label class="speed-control">
+          Speed
+          <input id="speed-input" type="range" min="0.1" max="3" value="1" step="0.1" />
+        </label>
+        <label>
+          Torso
+          <input id="torso-input" type="range" min="-20" max="20" value="0" step="0.5" />
+        </label>
+        <label>
+          R wheel
+          <input id="rwheel-input" type="range" min="-40" max="40" value="0" step="1" />
+        </label>
+        <label>
+          L wheel
+          <input id="lwheel-input" type="range" min="-40" max="40" value="0" step="1" />
+        </label>
+        <span id="trajectory-info" class="trajectory-info">no rollout</span>
+      </div>
+      <div class="readout" aria-label="simulation state">
+        <span id="sim-time">t 0.000</span>
+        <span id="base-pos">base 0.00 0.00 0.00</span>
+        <span id="tilt">roll 0.0 pitch 0.0</span>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
