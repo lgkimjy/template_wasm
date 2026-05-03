@@ -24,6 +24,19 @@ https://lgkimjy.github.io/wasm_template/
 
 On GitHub, open `Settings -> Pages`, set `Build and deployment -> Source` to `GitHub Actions`, then push to `master`. The workflow in `.github/workflows/deploy.yml` runs `npm ci`, builds the Vite app, and deploys `dist/`.
 
+## Project Webpage Embed
+
+To embed this viewer in a project webpage, use the deployed GitHub Pages URL in an iframe:
+
+```html
+<center>
+  <iframe
+    src="https://lgkimjy.github.io/wasm_template/"
+    style="width: 50%; height: 1000px; border: 0"
+  ></iframe>
+</center>
+```
+
 ## What this app does
 
 - Uses the official MuJoCo JavaScript/WebAssembly binding, `@mujoco/mujoco`.
