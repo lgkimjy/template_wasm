@@ -40,12 +40,13 @@
           L wheel
           <input id="lwheel-input" type="range" min="-40" max="40" value="0" step="1" />
         </label>
-        <span id="trajectory-info" class="trajectory-info">no rollout</span>
+        <label class="trajectory-control">
+          Rollout
+          <select id="trajectory-select"></select>
+        </label>
       </div>
       <div class="readout" aria-label="simulation state">
         <span id="sim-time">t 0.000</span>
-        <span id="base-pos">base 0.00 0.00 0.00</span>
-        <span id="tilt">roll 0.0 pitch 0.0</span>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

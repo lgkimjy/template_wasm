@@ -7,13 +7,12 @@ It is not a port of the full native `mahru_ctrl` WBC/MPC stack. That controller 
 ## Run
 
 ```sh
-cd /Users/junyoungkim/hierlab_ws/MAHRU_WL/template_wasm
-npm install
-npm run assets:glb
+cd wasm_template
+npm ci
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal. Because this app is configured as a GitHub Pages project site, the local URL includes the repository base path: `http://127.0.0.1:5174/wasm_template/`.
+Open the Vite URL printed in the terminal. Because this app is configured as a GitHub Pages project site, the local URL includes the repository base path, usually `http://127.0.0.1:5174/wasm_template/`.
 
 ## GitHub Pages
 
@@ -32,9 +31,19 @@ On GitHub, open `Settings -> Pages`, set `Build and deployment -> Source` to `Gi
 - Converts the matching `model/KIST MAHRU-WL/Meshes/*.STL` files to `public/assets/mahru_glb/*.glb` with `assimp`.
 - Uses a light MuJoCo runtime XML with mesh geoms stripped out, then renders the original visual meshes as a Three.js GLB overlay attached to MuJoCo body poses.
 - Renders the MuJoCo `mjvScene` primitives, contact helpers, and world helpers with Three.js.
-- Replays `public/trajectories/ssp_line_walk_onspot_qpos.csv`, copied from `MAHRU-WL_MPC_TOEJOINT/mimic/SSP_LINE_WALK_ONSPOT/mimic_data_with_timestamp.csv`.
+- Replays selectable qpos CSV rollouts from `public/trajectories/`, including the TOEJOINT on-spot walk and the `MAHRU-WL_control/mimic` dataset.
 - Exposes simple direct torque sliders for torso yaw and both wheel actuators.
 - Provides toggles for contact points, MuJoCo contact-force visuals, a world-frame axis helper, and base-follow camera tracking.
+
+## Regenerate GLB Assets
+
+The checked-in GLB files under `public/assets/mahru_glb/` are enough to run and deploy the viewer. Only run this if the source STL meshes change:
+
+```sh
+npm run assets:glb
+```
+
+That script expects `assimp` on `PATH` and the original MAHRU STL mesh directory at `../MAHRU-WL_MPC_TOEJOINT/model/KIST MAHRU-WL/Meshes`.
 
 ## Notes
 

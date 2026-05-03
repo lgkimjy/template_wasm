@@ -6,13 +6,22 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import loadMujoco from "@mujoco/mujoco";
 import mahruSourceXml from "./model/mahru_wl_battery_passive.xml?raw";
 
-const USE_FAST_GLB_VISUALS = true;
-const GLB_ASSET_BASE = `${import.meta.env.BASE_URL || "/"}assets/mahru_glb/`;
-
-const FULL_STL_MODE_MESSAGE = "Full STL MuJoCo mode is kept in rollback_snapshots/pre_glb_overlay_20260502.";
-
-const TRAJECTORY_URL = `${import.meta.env.BASE_URL || "/"}trajectories/ssp_line_walk_onspot_qpos.csv`;
-const TRAJECTORY_NAME = "SSP_LINE_WALK_ONSPOT";
+const APP_BASE = import.meta.env.BASE_URL || "/";
+const GLB_ASSET_BASE = `${APP_BASE}assets/mahru_glb/`;
+const TRAJECTORIES = [
+  {
+    id: "ssp_line_walk_onspot",
+    label: "SSP_LINE_WALK_ONSPOT",
+    url: `${APP_BASE}trajectories/ssp_line_walk_onspot_qpos.csv`,
+    quaternionLayout: "xwyz"
+  },
+  {
+    id: "mahru_wl_control_mimic",
+    label: "MAHRU_WL_CONTROL_MIMIC",
+    url: `${APP_BASE}trajectories/mahru_wl_control_mimic_qpos.csv`,
+    quaternionLayout: "zwxy"
+  }
+];
 
 const CAMERA_VIEW = {
   azimuthDeg: 47,
@@ -42,9 +51,7 @@ const els = {
   rWheel: document.getElementById("rwheel-input"),
   lWheel: document.getElementById("lwheel-input"),
   time: document.getElementById("sim-time"),
-  base: document.getElementById("base-pos"),
-  tilt: document.getElementById("tilt"),
-  trajectory: document.getElementById("trajectory-info"),
+  trajectorySelect: document.getElementById("trajectory-select"),
   error: document.getElementById("error-message")
 };
 
@@ -99,6 +106,9 @@ class MahruWasmApp {
     this.visualParts = [];
     this.bodyAccessors = new Map();
     this.trajectory = null;
+    this.trajectoryCache = new Map();
+    this.selectedTrajectory = TRAJECTORIES[0];
+    this.trajectoryRequest = 0;
     this.playbackFrame = 0;
     this.playbackTime = 0;
     this.lastWallTime = performance.now();
@@ -147,15 +157,16 @@ class MahruWasmApp {
   }
 
   async load() {
-    this.setStatus(USE_FAST_GLB_VISUALS ? "loading GLB" : "loading STL");
+    this.setStatus("loading GLB");
     this.visualManifest = buildVisualManifest(mahruSourceXml);
-    const trajectoryTextPromise = fetchText(TRAJECTORY_URL);
-    const visualPromise = USE_FAST_GLB_VISUALS ? this.loadVisualOverlay() : Promise.resolve();
-    const vfs = USE_FAST_GLB_VISUALS ? new mujoco.MjVFS() : await makeMahruVfs();
+    this.populateTrajectorySelect();
+    const trajectoryTextPromise = fetchText(this.selectedTrajectory.url);
+    const visualPromise = this.loadVisualOverlay();
+    const vfs = new mujoco.MjVFS();
     try {
-      this.setStatus(USE_FAST_GLB_VISUALS ? "compiling light MJCF" : "compiling STL");
+      this.setStatus("compiling light MJCF");
       this.model = mujoco.MjModel.from_xml_string(
-        makeMahruXml(mahruSourceXml, { stripMeshVisuals: USE_FAST_GLB_VISUALS }),
+        makeMahruXml(mahruSourceXml),
         vfs
       );
     } finally {
@@ -164,19 +175,32 @@ class MahruWasmApp {
     this.data = new mujoco.MjData(this.model);
     this.sceneModel = new mujoco.MjvScene(this.model, 2 ** 15);
     mujoco.mj_forward(this.model, this.data);
-    if (USE_FAST_GLB_VISUALS) {
-      await visualPromise;
-      this.bindVisualBodies();
-    }
+    await visualPromise;
+    this.bindVisualBodies();
     this.setStatus("loading rollout");
-    this.trajectory = parseTrajectoryCsv(await trajectoryTextPromise, this.model.nq);
+    this.trajectory = parseTrajectoryCsv(
+      await trajectoryTextPromise,
+      this.model.nq,
+      this.selectedTrajectory
+    );
+    this.trajectoryCache.set(this.selectedTrajectory.id, this.trajectory);
     this.setupTrajectoryControls();
     if (this.trajectory) {
       this.mode = "replay";
       this.applyTrajectoryFrame(0);
     }
     this.updateModeUi();
-    this.setStatus(this.trajectory ? "ready replay" : (USE_FAST_GLB_VISUALS ? "ready GLB" : "ready STL"));
+  }
+
+  populateTrajectorySelect() {
+    els.trajectorySelect.replaceChildren();
+    for (const trajectory of TRAJECTORIES) {
+      const option = document.createElement("option");
+      option.value = trajectory.id;
+      option.textContent = trajectory.label;
+      els.trajectorySelect.appendChild(option);
+    }
+    els.trajectorySelect.value = this.selectedTrajectory.id;
   }
 
   bindControls() {
@@ -186,6 +210,16 @@ class MahruWasmApp {
     });
 
     els.reset.addEventListener("click", () => this.reset());
+    window.addEventListener("keydown", (event) => {
+      if (event.key !== "Backspace" || event.repeat) return;
+      const target = event.target;
+      const isTextEdit = target instanceof HTMLTextAreaElement
+        || target?.isContentEditable
+        || (target instanceof HTMLInputElement && target.type !== "range");
+      if (isTextEdit) return;
+      event.preventDefault();
+      this.reset();
+    });
 
     els.replay.addEventListener("click", () => {
       if (!this.trajectory) return;
@@ -204,14 +238,9 @@ class MahruWasmApp {
     });
 
     els.forces.addEventListener("click", () => {
-      const pointFlag = mujoco.mjtVisFlag.mjVIS_CONTACTPOINT.value;
       const forceFlag = mujoco.mjtVisFlag.mjVIS_CONTACTFORCE.value;
       this.option.flags[forceFlag] = !this.option.flags[forceFlag];
-      if (this.option.flags[forceFlag]) {
-        this.option.flags[pointFlag] = true;
-      }
       els.forces.classList.toggle("active", this.option.flags[forceFlag]);
-      els.contacts.classList.toggle("active", this.option.flags[pointFlag]);
     });
 
     els.axes.addEventListener("click", () => {
@@ -231,6 +260,10 @@ class MahruWasmApp {
       this.paused = true;
       this.applyTrajectoryFrame(Number(els.timeline.value));
       this.updateModeUi();
+    });
+
+    els.trajectorySelect.addEventListener("change", () => {
+      this.selectTrajectory(els.trajectorySelect.value);
     });
 
     for (const input of [els.torso, els.rWheel, els.lWheel]) {
@@ -279,6 +312,43 @@ class MahruWasmApp {
         this.bodyAccessors.set(part.bodyName, this.data.body(part.bodyName));
       }
       part.bodyAccessor = this.bodyAccessors.get(part.bodyName);
+    }
+  }
+
+  async selectTrajectory(trajectoryId) {
+    const nextTrajectory = TRAJECTORIES.find((trajectory) => trajectory.id === trajectoryId);
+    if (!nextTrajectory || nextTrajectory.id === this.selectedTrajectory.id || !this.model) return;
+
+    this.selectedTrajectory = nextTrajectory;
+    els.trajectorySelect.value = nextTrajectory.id;
+    els.trajectorySelect.disabled = true;
+    this.setStatus("loading rollout");
+    const requestId = ++this.trajectoryRequest;
+
+    try {
+      let trajectory = this.trajectoryCache.get(nextTrajectory.id);
+      if (!trajectory) {
+        trajectory = parseTrajectoryCsv(await fetchText(nextTrajectory.url), this.model.nq, nextTrajectory);
+        this.trajectoryCache.set(nextTrajectory.id, trajectory);
+      }
+      if (requestId !== this.trajectoryRequest) return;
+
+      this.trajectory = trajectory;
+      this.mode = "replay";
+      this.paused = false;
+      this.playbackFrame = 0;
+      this.playbackTime = trajectory.times[0];
+      this.setupTrajectoryControls();
+      this.applyTrajectoryFrame(0);
+      this.updateBaseTracking(true);
+      this.updateModeUi();
+    } catch (error) {
+      console.error(error);
+      this.setStatus("error", error);
+    } finally {
+      if (requestId === this.trajectoryRequest) {
+        els.trajectorySelect.disabled = false;
+      }
     }
   }
 
@@ -411,19 +481,16 @@ class MahruWasmApp {
       els.timeline.disabled = true;
       els.speed.disabled = true;
       els.replay.disabled = true;
-      els.trajectory.textContent = "no rollout";
       return;
     }
 
     const lastFrame = this.trajectory.qpos.length - 1;
-    const duration = this.trajectory.times[lastFrame] - this.trajectory.times[0];
     els.timeline.min = "0";
     els.timeline.max = String(lastFrame);
     els.timeline.value = "0";
     els.timeline.disabled = false;
     els.speed.disabled = false;
     els.replay.disabled = false;
-    els.trajectory.textContent = `${TRAJECTORY_NAME} ${lastFrame + 1}f ${duration.toFixed(2)}s`;
   }
 
   applyTrajectoryFrame(frameIndex) {
@@ -456,12 +523,11 @@ class MahruWasmApp {
       input.disabled = replaying;
     }
     if (this.model) {
-      this.setStatus(replaying ? "ready replay" : "ready sim");
+      this.setStatus(replaying ? "replay" : "sim");
     }
   }
 
   syncVisualOverlay() {
-    if (!USE_FAST_GLB_VISUALS) return;
     for (const part of this.visualParts) {
       const body = part.bodyAccessor;
       if (!body) continue;
@@ -478,7 +544,7 @@ class MahruWasmApp {
     for (let i = 0; i < geomCount; i += 1) {
       const mjvGeom = geoms.get(i);
       let mesh = this.meshes[i];
-      if (USE_FAST_GLB_VISUALS && mjvGeom.type === mujoco.mjtGeom.mjGEOM_MESH.value) {
+      if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_MESH.value) {
         if (mesh) mesh.visible = false;
         mjvGeom.delete();
         continue;
@@ -519,7 +585,6 @@ class MahruWasmApp {
       mjvGeom.delete();
     }
     geoms.delete();
-    els.status.textContent = this.mode === "replay" && this.trajectory ? "ready replay" : "ready sim";
 
     for (let i = geomCount; i < this.meshes.length; i += 1) {
       const mesh = this.meshes[i];
@@ -528,9 +593,6 @@ class MahruWasmApp {
   }
 
   geometryKey(mjvGeom) {
-    if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_MESH.value) {
-      return `mesh:${this.meshIdForGeom(mjvGeom)}`;
-    }
     if (isDynamicVisualGeom(mjvGeom.type)) {
       return JSON.stringify([
         mjvGeom.type,
@@ -546,9 +608,7 @@ class MahruWasmApp {
     if (cached) return cached;
 
     let geometry;
-    if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_MESH.value) {
-      geometry = this.meshGeometryFor(this.meshIdForGeom(mjvGeom));
-    } else if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_PLANE.value) {
+    if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_PLANE.value) {
       const sx = mjvGeom.size[0] || 8;
       const sy = mjvGeom.size[1] || 8;
       geometry = new THREE.PlaneGeometry(2 * sx, 2 * sy);
@@ -568,7 +628,7 @@ class MahruWasmApp {
     } else if (isArrowGeom(mjvGeom.type)) {
       geometry = this.arrowGeometryFor(mjvGeom);
     } else if (mjvGeom.type === mujoco.mjtGeom.mjGEOM_LINE.value) {
-      geometry = this.lineGeometryFor(mjvGeom);
+      geometry = this.arrowGeometryFor(mjvGeom);
     } else {
       geometry = new THREE.BoxGeometry(0.03, 0.03, 0.03);
     }
@@ -579,69 +639,41 @@ class MahruWasmApp {
 
   arrowGeometryFor(mjvGeom) {
     const radius = Math.max(0.004, mjvGeom.size[0] || 0.008);
-    const length = Math.max(0.025, 2 * (mjvGeom.size[2] || 0.08));
+    const length = Math.max(0.025, mjvGeom.size[2] || 0.08);
     const headLength = Math.min(length * 0.38, Math.max(radius * 6, 0.035));
-    const shaftLength = Math.max(length - headLength, length * 0.45);
+    const doubleHeaded = mjvGeom.type === mujoco.mjtGeom.mjGEOM_ARROW2.value;
+    const shaftStart = doubleHeaded ? headLength : 0;
+    const shaftEnd = Math.max(shaftStart, length - headLength);
+    const shaftLength = Math.max(shaftEnd - shaftStart, length * 0.2);
     const headRadius = Math.max(radius * 3.2, 0.016);
+    const parts = [];
 
     const shaft = new THREE.CylinderGeometry(radius, radius, shaftLength, 12);
     shaft.rotateX(Math.PI / 2);
-    shaft.translate(0, 0, -headLength / 2);
+    shaft.translate(0, 0, shaftStart + shaftLength / 2);
+    parts.push(shaft);
 
     const head = new THREE.ConeGeometry(headRadius, headLength, 18);
     head.rotateX(Math.PI / 2);
-    head.translate(0, 0, length / 2 - headLength / 2);
+    head.translate(0, 0, length - headLength / 2);
+    parts.push(head);
 
-    const geometry = mergeGeometries([shaft, head], false);
-    shaft.dispose();
-    head.dispose();
-    return geometry;
-  }
-
-  lineGeometryFor(mjvGeom) {
-    return this.arrowGeometryFor(mjvGeom);
-  }
-
-  meshIdForGeom(mjvGeom) {
-    const geomId = mjvGeom.objid;
-    if (geomId >= 0 && this.model?.geom_dataid?.[geomId] !== undefined) {
-      return this.model.geom_dataid[geomId];
+    if (doubleHeaded) {
+      const tail = new THREE.ConeGeometry(headRadius, headLength, 18);
+      tail.rotateX(-Math.PI / 2);
+      tail.translate(0, 0, headLength / 2);
+      parts.push(tail);
     }
-    if (mjvGeom.dataid >= 0 && mjvGeom.dataid < this.model.nmesh) {
-      return mjvGeom.dataid;
-    }
-    return Math.floor(mjvGeom.dataid / 2);
-  }
 
-  meshGeometryFor(meshId) {
-    if (meshId < 0) return new THREE.BoxGeometry(0.03, 0.03, 0.03);
-
-    const meshInfo = this.model.mesh(meshId);
-    const vertStart = meshInfo.vertadr * 3;
-    const vertEnd = vertStart + meshInfo.vertnum * 3;
-    const faceStart = meshInfo.faceadr * 3;
-    const faceEnd = faceStart + meshInfo.facenum * 3;
-    const positions = new Float32Array(this.model.mesh_vert.subarray(vertStart, vertEnd));
-    const IndexArray = meshInfo.vertnum > 65535 ? Uint32Array : Uint16Array;
-    const indices = new IndexArray(this.model.mesh_face.subarray(faceStart, faceEnd));
-    if (typeof meshInfo.delete === "function") meshInfo.delete();
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-    geometry.computeVertexNormals();
-    geometry.computeBoundingSphere();
+    const geometry = mergeGeometries(parts, false);
+    for (const part of parts) part.dispose();
     return geometry;
   }
 
   updateReadout() {
-    const qpos = this.data.qpos;
     els.time.textContent = this.mode === "replay" && this.trajectory
-      ? `log ${this.data.time.toFixed(3)} f ${this.playbackFrame}`
+      ? `log ${this.data.time.toFixed(3)} sec · frame ${this.playbackFrame}`
       : `t ${this.data.time.toFixed(3)}`;
-    els.base.textContent = `base ${qpos[0].toFixed(2)} ${qpos[1].toFixed(2)} ${qpos[2].toFixed(2)}`;
-    const [roll, pitch] = rollPitchDegrees(qpos[3], qpos[4], qpos[5], qpos[6]);
-    els.tilt.textContent = `roll ${roll.toFixed(1)} pitch ${pitch.toFixed(1)}`;
   }
 
   resize() {
@@ -683,10 +715,6 @@ class MahruWasmApp {
     els.status.textContent = value;
     els.error.textContent = error ? String(error.message || error) : "";
   }
-}
-
-async function makeMahruVfs() {
-  throw new Error(FULL_STL_MODE_MESSAGE);
 }
 
 function loadGltf(loader, url) {
@@ -784,7 +812,8 @@ async function fetchText(url) {
   return response.text();
 }
 
-function parseTrajectoryCsv(text, nq) {
+function parseTrajectoryCsv(text, nq, config = {}) {
+  const quaternionLayout = config.quaternionLayout || "xwyz";
   const times = [];
   const qpos = [];
   const lines = text.split(/\r?\n/);
@@ -808,7 +837,7 @@ function parseTrajectoryCsv(text, nq) {
     }
     if (!frame) continue;
 
-    convertLoggedBaseQuatToMujoco(frame);
+    convertLoggedBaseQuatToMujoco(frame, quaternionLayout);
     times.push(hasTime ? values[0] : qpos.length * 0.001);
     qpos.push(frame);
   }
@@ -831,15 +860,24 @@ function expandMahruToeJointQpos(source) {
   return qpos;
 }
 
-function convertLoggedBaseQuatToMujoco(qpos) {
+function convertLoggedBaseQuatToMujoco(qpos, layout) {
   const logged0 = qpos[3];
   const logged1 = qpos[4];
   const logged2 = qpos[5];
   const logged3 = qpos[6];
-  qpos[3] = logged1;
-  qpos[4] = logged0;
-  qpos[5] = logged2;
-  qpos[6] = logged3;
+
+  if (layout === "zwxy") {
+    // MAHRU-WL_control logs MuJoCo [w, x, y, z] as [z, w, x, y].
+    qpos[3] = logged1;
+    qpos[4] = logged2;
+    qpos[5] = logged3;
+    qpos[6] = logged0;
+  } else {
+    qpos[3] = logged1;
+    qpos[4] = logged0;
+    qpos[5] = logged2;
+    qpos[6] = logged3;
+  }
   normalizeQuaternion(qpos, 3);
 }
 
@@ -907,12 +945,9 @@ function stripMeshVisuals(doc) {
   compiler?.removeAttribute("texturedir");
 }
 
-function makeMahruXml(source, options = {}) {
+function makeMahruXml(source) {
   const doc = parseXml(source);
-
-  if (options.stripMeshVisuals) {
-    stripMeshVisuals(doc);
-  }
+  stripMeshVisuals(doc);
 
   let worldbody = doc.querySelector("worldbody");
   if (!worldbody) {
@@ -949,15 +984,6 @@ function makeMahruXml(source, options = {}) {
   }
 
   return new XMLSerializer().serializeToString(doc);
-}
-
-function rollPitchDegrees(w, x, y, z) {
-  const sinr = 2 * (w * x + y * z);
-  const cosr = 1 - 2 * (x * x + y * y);
-  const roll = Math.atan2(sinr, cosr);
-  const sinp = 2 * (w * y - z * x);
-  const pitch = Math.asin(Math.max(-1, Math.min(1, sinp)));
-  return [roll * 180 / Math.PI, pitch * 180 / Math.PI];
 }
 
 function normalizeQuaternion(values, offset) {

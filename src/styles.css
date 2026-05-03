@@ -100,6 +100,18 @@ input[type="range"] {
   width: 88px;
 }
 
+select {
+  background: #edf3f8;
+  border: 0;
+  border-radius: 6px;
+  color: #17202a;
+  font: inherit;
+  font-weight: 650;
+  min-height: 34px;
+  max-width: 230px;
+  padding: 0 30px 0 10px;
+}
+
 .timeline-control {
   min-width: 230px;
 }
@@ -112,13 +124,12 @@ input[type="range"] {
   min-width: 132px;
 }
 
-.trajectory-info {
-  color: #b8c3cc;
-  font-variant-numeric: tabular-nums;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.trajectory-control {
+  min-width: 300px;
+}
+
+.trajectory-control select {
+  flex: 1;
 }
 
 input:disabled {
@@ -157,6 +168,10 @@ input:disabled {
 
   input[type="range"] {
     width: min(52vw, 240px);
+  }
+
+  .trajectory-control {
+    grid-column: span 3;
   }
 
   .readout {
