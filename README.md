@@ -13,14 +13,14 @@ npm run assets:glb
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal. Because this app is configured as a GitHub Pages project site, the local URL includes the repository base path: `http://127.0.0.1:5174/template_wasm/`.
+Open the Vite URL printed in the terminal. Because this app is configured as a GitHub Pages project site, the local URL includes the repository base path: `http://127.0.0.1:5174/wasm_template/`.
 
 ## GitHub Pages
 
 This repository is configured for GitHub Pages at:
 
 ```text
-https://lgkimjy.github.io/template_wasm/
+https://lgkimjy.github.io/wasm_template/
 ```
 
 On GitHub, open `Settings -> Pages`, set `Build and deployment -> Source` to `GitHub Actions`, then push to `master`. The workflow in `.github/workflows/deploy.yml` runs `npm ci`, builds the Vite app, and deploys `dist/`.
